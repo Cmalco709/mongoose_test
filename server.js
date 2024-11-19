@@ -82,7 +82,62 @@ app.get('/find/:database/:collection', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 })
- 
+
+app.post('/insert/:database/:collection', async (req, res) => {
+    try {
+        // Extract the request parameters using destructuring
+        const { database, collection } = req.params
+        // Get the request body and store it as data
+        const data = req.body;
+        // Get the appropriate Mongoose model
+        const Model = await getModel(database, collection);
+        // Create a new instance of that model with the data
+        const newDocument = new Model(data);
+        // const result = await Model.collection(collection).insertOne(data);
+        // Save the new document to the database
+        await newDocument.save();
+        // Log a success message to the console
+        console.log("successfully saved new document")
+        // Send back the newly created document as JSON with a 201 status code
+        res.status(201).json({ message: `Document saved successfully`, document: newDocument })
+    } catch (err) {
+        // Log any errors to the console
+        res.status(400).json({ error: err.message });
+        // Send back a 400 status code and the error message in the response
+    }
+});
+
+app.put('/update/:database/:collection/:id', async (req, res) => {
+    try {
+        const { database, collection, id } = req.params
+        const data = req.body
+        const Model = await getModel(database, collection);
+        const updatedDocument = Model.findByIdAndUpdate(id, data, { new: true, runValidators: true });
+        if (!updatedDocument) {
+            return res.status(404).json({ message: `id not found` });
+        }
+        res.status(200).json({ message: `Document updated successfully`, document: newDocument })
+    } catch (err) {
+        console.error("There was an error updating", err)
+        res.status(400).json({ error: err.message });
+    }
+});
+
+app.delete('/delete/:database/:collection/:id', async (req, res) => {
+    try {
+        const { database, collection, id } = req.params
+        const Model = await getModel(database, collection);
+        const deletedDocument = Model.findByIdAndDelete(id);
+        if (!deletedDocument) {
+            return res.status(404).json({ error: `Document not found` });
+        }
+        res.status(200).json({ message: `Document deleted successfully` })
+    } catch (err) {
+        console.error("There was an error deleting", err)
+        res.status(400).json({ error: err.message });
+    }
+});
+
 async function startServer() {
     try {
         app.listen(port, () => {
@@ -121,13 +176,13 @@ app.delete("/delete-collection/:database/:collection", async (req, res) => {
         delete models[modelKey];
         res.status(200).json({
             message: `Collection '${collection}' has been successfully deleted from database '${database}'`
-});
-} catch (err) {
-console.error("Error deleting collection:", err);
-res
-.status(500)
-.json({ error: "An error occurred while deleting the collection." });
-}
+        });
+    } catch (err) {
+        console.error("Error deleting collection:", err);
+        res
+            .status(500)
+            .json({ error: "An error occurred while deleting the collection." });
+    }
 });
 
 startServer();

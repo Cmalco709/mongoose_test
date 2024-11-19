@@ -6,7 +6,19 @@
 GET {{domain}}:{{port}}/find/{{database}}/{{collection}}
 Content-Type: application/json
 
+###
+POST {{domain}}:{{port}}/insert/{{database}}/{{collection}}
+Content-Type: application/json
+
+{
+    "item": "steak",
+    "food_group": "proteins"
+}
+
 ### Delete a Collection from a Database
-DELETE http://localhost:3000/delete-collection/{{database}}/{{collection}}
+@id = 673cef820f2e986d2f79dbea
+DELETE http://localhost:3000/delete/{{database}}/{{collection}}/{{id}}
 Content-Type: application/json
 ###
+
+
